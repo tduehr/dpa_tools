@@ -41,7 +41,6 @@ DES.C: DES Algorithm Program from the Book Applied Cryptography, Bruce Schneier
  */
 
 #include "DES.h"
-#include <stdio.h>
 
 
 void CBCfunc(unsigned char* pucData, unsigned char BlockNumber){
@@ -61,7 +60,7 @@ void deskey(unsigned char *key, short edf)  {
   for ( j = 0; j < 56; j++ ) {
     l = pc1[j];
     m = l & 07;
-    pc1m[j] = (key[l >> 3] & bytebit[m]) ? 1 : 0;
+    pc1m[j] = (key[l >> 3] & 1<<(7-m)) ? 1 : 0;
   }
   for( i = 0; i < 16; i++ ) {
     if( edf == DE1 ) m = (15 - i) << 1;
@@ -86,7 +85,7 @@ void deskey(unsigned char *key, short edf)  {
   cookey(kn);
 }
 
-static void cookey(unsigned long *raw1)  {
+void cookey(unsigned long *raw1)  {
   register unsigned long *cook, *raw0;
   unsigned long dough[32];
   register int i;
@@ -130,7 +129,7 @@ void des(unsigned char *inblock, unsigned char *outblock)  {
 }
 #endif
 */
-static void scrunch(unsigned char *outof, unsigned long *into)  {
+void scrunch(unsigned char *outof, unsigned long *into)  {
   *into   = (*outof++ & 0xffL) << 24;
   *into  |= (*outof++ & 0xffL) << 16;
   *into  |= (*outof++ & 0xffL) << 8;
@@ -141,7 +140,7 @@ static void scrunch(unsigned char *outof, unsigned long *into)  {
   *into  |= (*outof   & 0xffL);
 }
 
-static void unscrun(unsigned long *outof, unsigned char *into)  {
+void unscrun(unsigned long *outof, unsigned char *into)  {
   *into++ = (*outof >> 24) & 0xffL;
   *into++ = (*outof >> 16) & 0xffL;
   *into++ = (*outof >>  8) & 0xffL;
@@ -153,7 +152,7 @@ static void unscrun(unsigned long *outof, unsigned char *into)  {
 }
 
 
-static void desfunc(unsigned long *block, unsigned long *keys)  {
+void desfunc(unsigned long *block, unsigned long *keys)  {
   register unsigned long fval, work, right, leftt;
   register int round;
 

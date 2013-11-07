@@ -122,26 +122,26 @@ extern void TripleDES_DEC( des_ctx *dc,unsigned char *pucData, short sBlocks, un
  * into the block at address 'to'.  They can be the same.
  */
 
-static void scrunch(unsigned char *, unsigned long *);
-static void unscrun(unsigned long *, unsigned char *);
-static void desfunc(unsigned long *, unsigned long *);
-static void cookey(unsigned long *);
+void scrunch(unsigned char *, unsigned long *);
+void unscrun(unsigned long *, unsigned char *);
+void desfunc(unsigned long *, unsigned long *);
+void cookey(unsigned long *);
 
 
 /// Algorithm Arrays ///
 
 static unsigned long KnL[32] = { 0L };
-static unsigned long KnR[32] = { 0L };
-static unsigned long Kn3[32] = { 0L };
+// static unsigned long KnR[32] = { 0L };
+// static unsigned long Kn3[32] = { 0L };
 static const unsigned char Df_Key[24] = {
        0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef,
        0xfe,0xdc,0xba,0x98,0x76,0x54,0x32,0x10,
        0x89,0xab,0xcd,0xef,0x01,0x23,0x45,0x67 };
 
-static const unsigned short bytebit[8]    = {
-       0200, 0100, 040, 020, 010, 04, 02, 01 };
+// static const unsigned short bytebit[8]    = {
+//        0200, 0100, 040, 020, 010, 04, 02, 01 };
 
-static const unsigned long bigbyte[24] = {
+static const unsigned long bigbyte[32] = {
        0x800000L,    0x400000L,     0x200000L,    0x100000L,
        0x80000L,     0x40000L,      0x20000L,     0x10000L,
        0x8000L,      0x4000L,       0x2000L,      0x1000L,
