@@ -1,5 +1,6 @@
 #include <DES.h>
 
+
 // char Data[16];
 volatile char key[8] = {0xda, 0xff, 0x37, 0x8c, 0x02, 0x46, 0x10, 0xfb};
 // char key1[8] = {0xda, 0xff, 0x37, 0x8c, 0x02, 0x46, 0x10, 0xfb};
@@ -46,15 +47,17 @@ void copy_to_temp(volatile char* buf){
 void encrypt(volatile char* buf, volatile char* ckey){
   des_ctx dc;
   Des_Key(&dc, (unsigned char*)ckey, ENDE);
+  digitalWrite(GREEN_LED, HIGH);
   Des_Enc(&dc, (unsigned char*)buf, 1);
+  digitalWrite(GREEN_LED, LOW);
 }
 
 void setup()
 {
   pinMode(GREEN_LED, OUTPUT);
   pinMode(RED_LED, OUTPUT);
-  digitalWrite(RED_LED, HIGH);
-  delay(500);
+  // digitalWrite(RED_LED, HIGH);
+  // delay(500);
   digitalWrite(GREEN_LED, LOW);
   digitalWrite(RED_LED, LOW);
   Serial.begin(9600); // msp430g2231 must use 4800
@@ -68,7 +71,6 @@ void setup()
   Serial.println('A');
   delay(100);
   Serial.flush();
-  srand(millis());
 }
 
 void loop()
@@ -84,9 +86,7 @@ void loop()
       copy_to_temp(plain);
       if (debug)
         print8(temp);
-      digitalWrite(GREEN_LED, HIGH);
       encrypt(temp, key);
-      digitalWrite(GREEN_LED, LOW);
       print8(temp);
       break;
     case 'D':
@@ -96,10 +96,6 @@ void loop()
       for(int i = 0; i < 8; i++) {
         unsigned char rnd = (((unsigned char)rand()) % (unsigned char)26);
         Serial.print(rnd, HEX);
-        if (i < 7)
-          Serial.print(":");
-        else
-          Serial.print("|");
         plain[i] = (unsigned char)((unsigned char)(rnd % (unsigned char)26) + (unsigned char)0x41);
       }
       if (debug)
@@ -120,9 +116,7 @@ void loop()
         print8(plain);
 
       copy_to_temp(plain);
-      digitalWrite(GREEN_LED, HIGH);
       encrypt(temp, key);
-      digitalWrite(GREEN_LED, LOW);
       print8(temp);
       break;
     case 'K':
@@ -133,6 +127,7 @@ void loop()
       break;
     case 'P':
       print8(plain);
+      break;
     case 'p':
       read8(plain);
       break;
@@ -146,5 +141,5 @@ void loop()
     }
     digitalWrite(RED_LED, LOW);
   }
-  delay(300);
+  // delay(300);
 }

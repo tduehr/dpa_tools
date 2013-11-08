@@ -42,6 +42,7 @@ DES.C: DES Algorithm Program from the Book Applied Cryptography, Bruce Schneier
 
 #include "DES.h"
 
+// unsigned long KnL[32] = { 0L };
 
 void CBCfunc(unsigned char* pucData, unsigned char BlockNumber){
   int i;
@@ -49,18 +50,50 @@ void CBCfunc(unsigned char* pucData, unsigned char BlockNumber){
     pucData[(BlockNumber -1)*8 + i] = pucData[(BlockNumber -2)*8 +i] ^ pucData[(BlockNumber -1)*8 +i];
   }
 }
+// inline void cpkey(unsigned long *into)  {
+//   register unsigned long *from, *endp;
+//
+//   from = KnL, endp = &KnL[32];
+//   while( from < endp ) *into++ = *from++;
+// }
+//
+// inline void usekey(unsigned long *from)  {
+//   register unsigned long *to, *endp;
+//
+//   to = KnL, endp = &KnL[32];
+//   while( to < endp ) *to++ = *from++;
+// }
 
+inline void cookey(unsigned long *raw1)  {
+  register unsigned long *cook, *raw0;
+  // unsigned long dough[32];
+  register int i;
 
-void deskey(unsigned char *key, short edf)  {
+  cook = raw1;
+  for( i = 0; i < 16; i++, raw1++ ) {
+    raw0 = raw1++;
+    *cook   = (*raw0 & 0x00fc0000L) << 6;
+    *cook  |= (*raw0 & 0x00000fc0L) << 10;
+    *cook  |= (*raw1 & 0x00fc0000L) >> 10;
+    *cook++|= (*raw1 & 0x00000fc0L) >> 6;
+    *cook   = (*raw0 & 0x0003f000L) << 12;
+    *cook  |= (*raw0 & 0x0000003fL) << 16;
+    *cook  |= (*raw1 & 0x0003f000L) >> 4;
+    *cook++       |= (*raw1 & 0x0000003fL);
+  }
+  // usekey(dough);
+}
+
+inline void deskey(unsigned char *key, short edf, unsigned long* into)  {
   /* Thanks to James Gillogly & Phil Karn! */
   register int i, j, l, m, n;
   unsigned char pc1m[56], pcr[56];
-  unsigned long kn[32];
+  unsigned long* kn = into;
 
   for ( j = 0; j < 56; j++ ) {
     l = pc1[j];
     m = l & 07;
-    pc1m[j] = (key[l >> 3] & 1<<(7-m)) ? 1 : 0;
+    pc1m[j] = (key[l >> 3] & bytebit[m]) ? 1 : 0;
   }
   for( i = 0; i < 16; i++ ) {
     if( edf == DE1 ) m = (15 - i) << 1;
@@ -85,39 +118,6 @@ void deskey(unsigned char *key, short edf)  {
   cookey(kn);
 }
 
-void cookey(unsigned long *raw1)  {
-  register unsigned long *cook, *raw0;
-  unsigned long dough[32];
-  register int i;
-
-  cook = dough;
-  for( i = 0; i < 16; i++, raw1++ ) {
-    raw0 = raw1++;
-    *cook   = (*raw0 & 0x00fc0000L) << 6;
-    *cook  |= (*raw0 & 0x00000fc0L) << 10;
-    *cook  |= (*raw1 & 0x00fc0000L) >> 10;
-    *cook++|= (*raw1 & 0x00000fc0L) >> 6;
-    *cook   = (*raw0 & 0x0003f000L) << 12;
-    *cook  |= (*raw0 & 0x0000003fL) << 16;
-    *cook  |= (*raw1 & 0x0003f000L) >> 4;
-    *cook++       |= (*raw1 & 0x0000003fL);
-  }
-  usekey(dough);
-}
-
-void cpkey(unsigned long *into)  {
-  register unsigned long *from, *endp;
-
-  from = KnL, endp = &KnL[32];
-  while( from < endp ) *into++ = *from++;
-}
-
-void usekey(unsigned long *from)  {
-  register unsigned long *to, *endp;
-
-  to = KnL, endp = &KnL[32];
-  while( to < endp ) *to++ = *from++;
-}
 /*
 #if 0
 void des(unsigned char *inblock, unsigned char *outblock)  {
@@ -129,7 +129,7 @@ void des(unsigned char *inblock, unsigned char *outblock)  {
 }
 #endif
 */
-void scrunch(unsigned char *outof, unsigned long *into)  {
+inline void scrunch(unsigned char *outof, unsigned long *into)  {
   *into   = (*outof++ & 0xffL) << 24;
   *into  |= (*outof++ & 0xffL) << 16;
   *into  |= (*outof++ & 0xffL) << 8;
@@ -140,7 +140,7 @@ void scrunch(unsigned char *outof, unsigned long *into)  {
   *into  |= (*outof   & 0xffL);
 }
 
-void unscrun(unsigned long *outof, unsigned char *into)  {
+inline void unscrun(unsigned long *outof, unsigned char *into)  {
   *into++ = (*outof >> 24) & 0xffL;
   *into++ = (*outof >> 16) & 0xffL;
   *into++ = (*outof >>  8) & 0xffL;
@@ -236,18 +236,18 @@ void desfunc(unsigned long *block, unsigned long *keys)  {
 void Des_Key(des_ctx *dc, unsigned char *pucKey, short sMode){
 
   if (sMode == EN0){
-  	deskey(pucKey,sMode);
-  	cpkey(dc->ek);
+    deskey(pucKey,sMode, dc->ek);
+    // cpkey(dc->ek);
   }
   else if(sMode == DE1) {     
-  	deskey(pucKey, sMode);
-  	cpkey(dc->dk);
-	}
+    deskey(pucKey, sMode, dc->dk);
+    // cpkey(dc->dk);
+  }
   else if(sMode == ENDE){
-   	 deskey(pucKey,EN0);
-  	cpkey(dc->ek);
-	deskey(pucKey,DE1);
-  	cpkey(dc->dk);
+    deskey(pucKey,EN0, dc->ek);
+    // cpkey(dc->ek);
+    deskey(pucKey,DE1, dc->dk);
+    // cpkey(dc->dk);
   }
 }
 /* Encrypt several blocks in ECB sMode.  Caller is responsible for
