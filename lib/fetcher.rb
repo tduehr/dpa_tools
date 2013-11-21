@@ -13,6 +13,8 @@ class Fetcher
   def get count = 1
     arr = count.times.map do |x|
       hsh = {}
+      @serial.write 'RE'
+      hsh[:cipher_text] = @serial.readline
       hsh[:time_scale] = @scope.timebase.scale
       hsh[:time_offset] = @scope.timebase.offset
       hsh[:chan1_scale] = @scope.channel(1).scale
