@@ -1,321 +1,108 @@
-/* --COPYRIGHT--,BSD
- * Copyright (c) 2012, Texas Instruments Incorporated
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * *  Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *
- * *  Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * *  Neither the name of Texas Instruments Incorporated nor the names of
- *    its contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * --/COPYRIGHT--*/
-/*****************************************************************************
- * DES Helper file. DES encryption procedure is done by using the following functions:
- * des_key( *(Key Structure), *key, mode);  ----- Initialises key scheduler 
- * des_enc( *(Key Structure), *data, #blocks); --- Initiates DES Encryption
- * des_dec( *(Key Structure), *data, #blocks); -- Initiates Decryption
+/* des.h */
+/*
+    This file is part of the AVR-Crypto-Lib.
+    Copyright (C) 2008  Daniel Otte (daniel.otte@rub.de)
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+/**
+ * \file	des.h
+ * \author	Daniel Otte 
+ * \date	2007-06-16
+ * \brief 	des and tdes declarations
+ * \license	GPLv3 or later
  * 
- * mode   === EN0 (Encrypt) or DE1 (Decrypt) or ENDE (Encrypt and Decrypt)
- * blocks === # of blocks to be enc/decrypted
- *
- *DES_Enc_CBC(*(Key Structure),&data[x], #blocks); --- Adds CBC chaining to multiple blocks.Encode
- *
- *  3DES is as follows:
- * TripleDES_ENC( des_ctx *(Key Structure),unsigned char *data, short blocks,unsigned char *key1, unsigned char *key2,unsigned char *key3)
- * TripleDES_DEC( des_ctx *(Key Structure),unsigned char *data, short blocks,unsigned char *key1, unsigned char *key2,unsigned char *key3)
- *
- * Modified by JH 4/27/12 --- inital release
- *                         -- Formatting Changes
- *                         -- 3DES Added
- * Modified 6/4/12 by JH  --- Adding CBC funcitonality
+ */
+#ifndef ADES_H_
+#define ADES_H_
+
+/* the FIPS 46-3 (1999-10-25) name for triple DES is triple data encryption algorithm so TDEA.
+ * Also we only implement the three key mode  */
+
+/** \def tdea_enc
+ * \brief defining an alias for void tdes_enc(void *out, const void *in, const void *key)
  */
 
-/// Modes ///
+/** \def tdea_dec
+ * \brief defining an alias for void tdes_dec(void *out, const void *in, const void *key)
+ */
 
-#ifndef DES_h
-#define DES_h
-
-#define EN0   0      /* MODE == encrypt */
-#define DE1   1      /* MODE == decrypt */
-#define ENDE  2     /* MODE == Encrypt and Decrypt */
+#define tdea_enc tdes_enc
+#define tdea_dec tdes_dec
 
 #ifdef  __cplusplus
 extern "C" {
 #endif
 
-/// Key Structure Definition  ///
-typedef struct {
-  unsigned long ek[32];
- unsigned long dk[32];
-} des_ctx;
-
-/// Function Declarations  ///
-
-extern void DES_Enc_CBC (des_ctx *dc,unsigned char *pucData, short sBlocks, unsigned char *pucIV);
-extern void DES_Dec_CBC (des_ctx *dc,unsigned char *pucData, short sBlocks, unsigned char *pucIV);
-
-extern void TripleDES_ENC_CBC( des_ctx *dc,unsigned char *pucData, short sBlocks, unsigned char *pucIV, unsigned char *pucKey1,unsigned char *pucKey2,unsigned char *pucKey3);
-extern void TripleDES_DEC_CBC( des_ctx *dc,unsigned char *pucData, short sBlocks, unsigned char *pucIV, unsigned char *pucKey1,unsigned char *pucKey2,unsigned char *pucKey3);
-
-extern void Des_Key(des_ctx *dc, unsigned char *pucKey, short sMode);
-/* 
- * Function that starts key schedule.
+/** \fn void des_enc(void *out, const void *in, const void *key)
+ * \brief encrypt a block with DES
+ * 
+ * This function encrypts a block of 64 bits (8 bytes) with the DES algorithm.
+ * Key expansion is done automatically. The key is 64 bits long, but note that
+ * only 56 bits are used (the LSB of each byte is dropped). The input and output
+ * blocks may overlap.
+ * 
+ * \param out pointer to the block (64 bit = 8 byte) where the ciphertext is written to
+ * \param in  pointer to the block (64 bit = 8 byte) where the plaintext is read from
+ * \param key pointer to the key (64 bit = 8 byte)
  */
+extern void des_enc(void *out, const void *in, const void *key);
 
-extern void Des_Enc(des_ctx *dc, unsigned char *pucData, short sBlocks);
-/*
- * Function that starts encoding
+/** \fn void des_dec(void *out, const void *in, const void *key)
+ * \brief decrypt a block with DES
+ * 
+ * This function decrypts a block of 64 bits (8 bytes) with the DES algorithm.
+ * Key expansion is done automatically. The key is 64 bits long, but note that
+ * only 56 bits are used (the LSB of each byte is dropped). The input and output
+ * blocks may overlap.
+ * 
+ * \param out pointer to the block (64 bit = 8 byte) where the plaintext is written to
+ * \param in  pointer to the block (64 bit = 8 byte) where the ciphertext is read from
+ * \param key pointer to the key (64 bit = 8 byte)
  */
+extern void des_dec(void *out, const void *in, const void *key);
 
-extern void Des_Dec(des_ctx *dc, unsigned char *pucData, short sBlocks);
-/*
- * Function that starts decoding
+/** \fn void tdes_enc(void *out, const void *in, const void *key)
+ * \brief encrypt a block with Tripple-DES
+ * 
+ * This function encrypts a block of 64 bits (8 bytes) with the Tripple-DES (EDE)
+ * algorithm. Key expansion is done automatically. The key is 192 bits long, but
+ * note that only 178 bits are used (the LSB of each byte is dropped). The input
+ * and output blocks may overlap.
+ * 
+ * \param out pointer to the block (64 bit = 8 byte) where the ciphertext is written to
+ * \param in  pointer to the block (64 bit = 8 byte) where the plaintext is read from
+ * \param key pointer to the key (192 bit = 24 byte)
  */
+extern void tdes_enc(void *out, const void *in, const void *key);
 
-extern void TripleDES_ENC( des_ctx *dc,unsigned char *pucData, short sBlocks, unsigned char *pucKey1, unsigned char *pucKey2, unsigned char *pucKey3);
-
-extern void TripleDES_DEC( des_ctx *dc,unsigned char *pucData, short sBlocks, unsigned char *pucKey1, unsigned char *pucKey2, unsigned char *pucKey3);
-
-
-
- void deskey(unsigned char *, short, unsigned long*);
-/*                  hexkey[8]     MODE
- * Sets the internal key register according to the hexadecimal
- * key contained in the 8 bytes of hexkey, according to the DES,
- * for encryption or decryption according to MODE.
+/** \fn void tdes_dec(void *out, const void *in, const void *key)
+ * \brief decrypt a block with Tripple-DES
+ * 
+ * This function decrypts a block of 64 bits (8 bytes) with the Tripple-DES (EDE)
+ * algorithm. Key expansion is done automatically. The key is 192 bits long, but
+ * note that only 178 bits are used (the LSB of each byte is dropped). The input
+ * and output blocks may overlap.
+ * 
+ * \param out pointer to the block (64 bit = 8 byte) where the plaintext is written to
+ * \param in  pointer to the block (64 bit = 8 byte) where the ciphertext is read from
+ * \param key pointer to the key (192 bit = 24 byte)
  */
- // void usekey(unsigned long *);
-/*                cookedkey[32]
- * Loads the internal key register with the data in cookedkey.
- */
-
- // void cpkey(unsigned long *);
-/*               cookedkey[32]
- * Copies the contents of the internal key register into the storage
- * located at &cookedkey[0].
- */
-
- void des(unsigned char *, unsigned char *);
-/*                from[8]         to[8]
- * Encrypts/Decrypts (according to the key currently loaded in the
- * internal key register) one block of eight bytes at address 'from'
- * into the block at address 'to'.  They can be the same.
- */
-
-// void scrunch(unsigned char *, unsigned long *);
-// void unscrun(unsigned long *, unsigned char *);
-void desfunc(unsigned long *, unsigned long *);
-// void cookey(unsigned long *);
-
-
-/// Algorithm Arrays ///
-
-// unsigned long KnL[32] = { 0L };
-// static unsigned long KnR[32] = { 0L };
-// static unsigned long Kn3[32] = { 0L };
-// static const unsigned char Df_Key[24] = {
-//        0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef,
-//        0xfe,0xdc,0xba,0x98,0x76,0x54,0x32,0x10,
-//        0x89,0xab,0xcd,0xef,0x01,0x23,0x45,0x67 };
-
-static const unsigned short bytebit[8]    = {
-       0200, 0100, 040, 020, 010, 04, 02, 01 };
-
-static const unsigned long bigbyte[24] = {
-       0x800000L,   0x400000L,  0x200000L,    0x100000L,
-       0x080000L,   0x040000L,  0x020000L,    0x010000L,
-       0x008000L,   0x004000L,  0x002000L,    0x001000L,
-       0x000800L,   0x000400L,  0x000200L,    0x000100L,
-       0x000080L,   0x000040L,  0x000020L,    0x000010L,
-       0x000008L,   0x000004L,  0x000002L,    0x000001L   };
-
-/* Use the key schedule specified in the Standard (ANSI X3.92-1981). */
-
-static const unsigned char pc1[56] = {
-       56, 48, 40, 32, 24, 16,  8,   0, 57, 49, 41, 33, 25, 17,
-        9,  1, 58, 50, 42, 34, 26,  18, 10,  2, 59, 51, 43, 35,
-       62, 54, 46, 38, 30, 22, 14,   6, 61, 53, 45, 37, 29, 21,
-       13,  5, 60, 52, 44, 36, 28,  20, 12,  4, 27, 19, 11,  3 };
-
-static const unsigned char totrot[16] = {
-       1,2,4,6,8,10,12,14,15,17,19,21,23,25,27,28 };
-
-static const unsigned char pc2[48] = {
-       13, 16, 10, 23,  0,  4,       2, 27, 14,  5, 20,  9,
-       22, 18, 11,  3, 25,  7,      15,  6, 26, 19, 12,  1,
-       40, 51, 30, 36, 46, 54,      29, 39, 50, 44, 32, 47,
-       43, 48, 38, 55, 33, 52,      45, 41, 49, 35, 28, 31 };
-
-	   
-/// S-Boxes ///
-
-static const unsigned long SP1[64] = {
-  0x01010400L, 0x00000000L, 0x00010000L, 0x01010404L,
-  0x01010004L, 0x00010404L, 0x00000004L, 0x00010000L,
-  0x00000400L, 0x01010400L, 0x01010404L, 0x00000400L,
-  0x01000404L, 0x01010004L, 0x01000000L, 0x00000004L,
-  0x00000404L, 0x01000400L, 0x01000400L, 0x00010400L,
-  0x00010400L, 0x01010000L, 0x01010000L, 0x01000404L,
-  0x00010004L, 0x01000004L, 0x01000004L, 0x00010004L,
-  0x00000000L, 0x00000404L, 0x00010404L, 0x01000000L,
-  0x00010000L, 0x01010404L, 0x00000004L, 0x01010000L,
-  0x01010400L, 0x01000000L, 0x01000000L, 0x00000400L,
-  0x01010004L, 0x00010000L, 0x00010400L, 0x01000004L,
-  0x00000400L, 0x00000004L, 0x01000404L, 0x00010404L,
-  0x01010404L, 0x00010004L, 0x01010000L, 0x01000404L,
-  0x01000004L, 0x00000404L, 0x00010404L, 0x01010400L,
-  0x00000404L, 0x01000400L, 0x01000400L, 0x00000000L,
-  0x00010004L, 0x00010400L, 0x00000000L, 0x01010004L };
-
-static const unsigned long SP2[64] = {
-  0x80108020L, 0x80008000L, 0x00008000L, 0x00108020L,
-  0x00100000L, 0x00000020L, 0x80100020L, 0x80008020L,
-  0x80000020L, 0x80108020L, 0x80108000L, 0x80000000L,
-  0x80008000L, 0x00100000L, 0x00000020L, 0x80100020L,
-  0x00108000L, 0x00100020L, 0x80008020L, 0x00000000L,
-  0x80000000L, 0x00008000L, 0x00108020L, 0x80100000L,
-  0x00100020L, 0x80000020L, 0x00000000L, 0x00108000L,
-  0x00008020L, 0x80108000L, 0x80100000L, 0x00008020L,
-  0x00000000L, 0x00108020L, 0x80100020L, 0x00100000L,
-  0x80008020L, 0x80100000L, 0x80108000L, 0x00008000L,
-  0x80100000L, 0x80008000L, 0x00000020L, 0x80108020L,
-  0x00108020L, 0x00000020L, 0x00008000L, 0x80000000L,
-  0x00008020L, 0x80108000L, 0x00100000L, 0x80000020L,
-  0x00100020L, 0x80008020L, 0x80000020L, 0x00100020L,
-  0x00108000L, 0x00000000L, 0x80008000L, 0x00008020L,
-  0x80000000L, 0x80100020L, 0x80108020L, 0x00108000L };
-
-static const unsigned long SP3[64] = {
-  0x00000208L, 0x08020200L, 0x00000000L, 0x08020008L,
-  0x08000200L, 0x00000000L, 0x00020208L, 0x08000200L,
-  0x00020008L, 0x08000008L, 0x08000008L, 0x00020000L,
-  0x08020208L, 0x00020008L, 0x08020000L, 0x00000208L,
-  0x08000000L, 0x00000008L, 0x08020200L, 0x00000200L,
-  0x00020200L, 0x08020000L, 0x08020008L, 0x00020208L,
-  0x08000208L, 0x00020200L, 0x00020000L, 0x08000208L,
-  0x00000008L, 0x08020208L, 0x00000200L, 0x08000000L,
-  0x08020200L, 0x08000000L, 0x00020008L, 0x00000208L,
-  0x00020000L, 0x08020200L, 0x08000200L, 0x00000000L,
-  0x00000200L, 0x00020008L, 0x08020208L, 0x08000200L,
-  0x08000008L, 0x00000200L, 0x00000000L, 0x08020008L,
-  0x08000208L, 0x00020000L, 0x08000000L, 0x08020208L,
-  0x00000008L, 0x00020208L, 0x00020200L, 0x08000008L,
-  0x08020000L, 0x08000208L, 0x00000208L, 0x08020000L,
-  0x00020208L, 0x00000008L, 0x08020008L, 0x00020200L };
-
-static const unsigned long SP4[64] = {
-  0x00802001L, 0x00002081L, 0x00002081L, 0x00000080L,
-  0x00802080L, 0x00800081L, 0x00800001L, 0x00002001L,
-  0x00000000L, 0x00802000L, 0x00802000L, 0x00802081L,
-  0x00000081L, 0x00000000L, 0x00800080L, 0x00800001L,
-  0x00000001L, 0x00002000L, 0x00800000L, 0x00802001L,
-  0x00000080L, 0x00800000L, 0x00002001L, 0x00002080L,
-  0x00800081L, 0x00000001L, 0x00002080L, 0x00800080L,
-  0x00002000L, 0x00802080L, 0x00802081L, 0x00000081L,
-  0x00800080L, 0x00800001L, 0x00802000L, 0x00802081L,
-  0x00000081L, 0x00000000L, 0x00000000L, 0x00802000L,
-  0x00002080L, 0x00800080L, 0x00800081L, 0x00000001L,
-  0x00802001L, 0x00002081L, 0x00002081L, 0x00000080L,
-  0x00802081L, 0x00000081L, 0x00000001L, 0x00002000L,
-  0x00800001L, 0x00002001L, 0x00802080L, 0x00800081L,
-  0x00002001L, 0x00002080L, 0x00800000L, 0x00802001L,
-  0x00000080L, 0x00800000L, 0x00002000L, 0x00802080L };
-
-static const unsigned long SP5[64] = {
-  0x00000100L, 0x02080100L, 0x02080000L, 0x42000100L,
-  0x00080000L, 0x00000100L, 0x40000000L, 0x02080000L,
-  0x40080100L, 0x00080000L, 0x02000100L, 0x40080100L,
-  0x42000100L, 0x42080000L, 0x00080100L, 0x40000000L,
-  0x02000000L, 0x40080000L, 0x40080000L, 0x00000000L,
-  0x40000100L, 0x42080100L, 0x42080100L, 0x02000100L,
-  0x42080000L, 0x40000100L, 0x00000000L, 0x42000000L,
-  0x02080100L, 0x02000000L, 0x42000000L, 0x00080100L,
-  0x00080000L, 0x42000100L, 0x00000100L, 0x02000000L,
-  0x40000000L, 0x02080000L, 0x42000100L, 0x40080100L,
-  0x02000100L, 0x40000000L, 0x42080000L, 0x02080100L,
-  0x40080100L, 0x00000100L, 0x02000000L, 0x42080000L,
-  0x42080100L, 0x00080100L, 0x42000000L, 0x42080100L,
-  0x02080000L, 0x00000000L, 0x40080000L, 0x42000000L,
-  0x00080100L, 0x02000100L, 0x40000100L, 0x00080000L,
-  0x00000000L, 0x40080000L, 0x02080100L, 0x40000100L };
-
-static const unsigned long SP6[64] = {
-  0x20000010L, 0x20400000L, 0x00004000L, 0x20404010L,
-  0x20400000L, 0x00000010L, 0x20404010L, 0x00400000L,
-  0x20004000L, 0x00404010L, 0x00400000L, 0x20000010L,
-  0x00400010L, 0x20004000L, 0x20000000L, 0x00004010L,
-  0x00000000L, 0x00400010L, 0x20004010L, 0x00004000L,
-  0x00404000L, 0x20004010L, 0x00000010L, 0x20400010L,
-  0x20400010L, 0x00000000L, 0x00404010L, 0x20404000L,
-  0x00004010L, 0x00404000L, 0x20404000L, 0x20000000L,
-  0x20004000L, 0x00000010L, 0x20400010L, 0x00404000L,
-  0x20404010L, 0x00400000L, 0x00004010L, 0x20000010L,
-  0x00400000L, 0x20004000L, 0x20000000L, 0x00004010L,
-  0x20000010L, 0x20404010L, 0x00404000L, 0x20400000L,
-  0x00404010L, 0x20404000L, 0x00000000L, 0x20400010L,
-  0x00000010L, 0x00004000L, 0x20400000L, 0x00404010L,
-  0x00004000L, 0x00400010L, 0x20004010L, 0x00000000L,
-  0x20404000L, 0x20000000L, 0x00400010L, 0x20004010L };
-
-static const unsigned long SP7[64] = {
-  0x00200000L, 0x04200002L, 0x04000802L, 0x00000000L,
-  0x00000800L, 0x04000802L, 0x00200802L, 0x04200800L,
-  0x04200802L, 0x00200000L, 0x00000000L, 0x04000002L,
-  0x00000002L, 0x04000000L, 0x04200002L, 0x00000802L,
-  0x04000800L, 0x00200802L, 0x00200002L, 0x04000800L,
-  0x04000002L, 0x04200000L, 0x04200800L, 0x00200002L,
-  0x04200000L, 0x00000800L, 0x00000802L, 0x04200802L,
-  0x00200800L, 0x00000002L, 0x04000000L, 0x00200800L,
-  0x04000000L, 0x00200800L, 0x00200000L, 0x04000802L,
-  0x04000802L, 0x04200002L, 0x04200002L, 0x00000002L,
-  0x00200002L, 0x04000000L, 0x04000800L, 0x00200000L,
-  0x04200800L, 0x00000802L, 0x00200802L, 0x04200800L,
-  0x00000802L, 0x04000002L, 0x04200802L, 0x04200000L,
-  0x00200800L, 0x00000000L, 0x00000002L, 0x04200802L,
-  0x00000000L, 0x00200802L, 0x04200000L, 0x00000800L,
-  0x04000002L, 0x04000800L, 0x00000800L, 0x00200002L };
-
-static const unsigned long SP8[64] = {
-  0x10001040L, 0x00001000L, 0x00040000L, 0x10041040L,
-  0x10000000L, 0x10001040L, 0x00000040L, 0x10000000L,
-  0x00040040L, 0x10040000L, 0x10041040L, 0x00041000L,
-  0x10041000L, 0x00041040L, 0x00001000L, 0x00000040L,
-  0x10040000L, 0x10000040L, 0x10001000L, 0x00001040L,
-  0x00041000L, 0x00040040L, 0x10040040L, 0x10041000L,
-  0x00001040L, 0x00000000L, 0x00000000L, 0x10040040L,
-  0x10000040L, 0x10001000L, 0x00041040L, 0x00040000L,
-  0x00041040L, 0x00040000L, 0x10041000L, 0x00001000L,
-  0x00000040L, 0x10040040L, 0x00001000L, 0x00041040L,
-  0x10001000L, 0x00000040L, 0x10000040L, 0x10040000L,
-  0x10040040L, 0x10000000L, 0x00040000L, 0x10001040L,
-  0x00000000L, 0x10041040L, 0x00040040L, 0x10000040L,
-  0x10040000L, 0x10001000L, 0x10001040L, 0x00000000L,
-  0x10041040L, 0x00041000L, 0x00041000L, 0x00001040L,
-  0x00001040L, 0x00040040L, 0x10000000L, 0x10041000L };
+extern void tdes_dec(void *out, const void *in, const void *key);
 
 #ifdef  __cplusplus
 }
 #endif // __cplusplus
 
-
-#endif
+#endif /*ADES_H_*/
