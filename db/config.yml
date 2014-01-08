@@ -1,0 +1,29 @@
+production:
+  adapter: postgresql
+  host: '/var/pgsql_socket'
+  port: 5432
+  database: 'power_analysis'
+  username: 'power_analysis'
+  password: 'heluhelu'
+  pool: 5
+  timeout: 5000
+  encoding: utf8
+
+sidekiq:
+  adapter: postgresql
+  host: '/var/pgsql_socket'
+  port: 5432
+  database: 'power_analysis'
+  username: 'power_analysis'
+  password: 'heluhelu'
+  pool: 10
+  timeout: 5000
+  encoding: utf8
+
+development:
+  adapter: postgresql
+  host: '/var/pgsql_socket'
+  database: 'power_analysis'
+  pool: 5
+  timeout: 5000
+  encoding: utf8

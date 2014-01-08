@@ -1,20 +1,30 @@
-class TraceProcessor
-  def initialize key='dpa'
-    @key = key
-    @block = block
+class WaveformProcessor
+  attr_accessor :trace, :chan1_data, :chan2_data
+  def initialize trace, chan1_data: nil, chan2_data: nil
+    @trace = trace
+    @chan1_data = chan1_data || @trace.chan1_data[10..-1]
+    @chan2_data = chan2_data || @trace.chan2_data[10..-1]
   end
 
-  def process_waveform *args
-    args.each do |wav|
-      
-      fact1 = (wav[:chan1_scale]/25.0 - (wav[:chan1_offset] + wav[:chan1_scale] * 4.6))/wav[:resistor]
-      fact2 = (wav[:chan2_scale]/25.0 - (wav[:chan2_offset] + wav[:chan2_scale] * 4.6))/wav[:resistor]
-      tfact = wav[:time_offset] - (wav[:chan2_data].bytesize - 10)
-      waveform = wav[:chan1_data][10..-1].bytes.each_with_object({amplitude: [], time: []}) do |pnt, wave|
-        (240 - pnt)*fact1 - (240 - wav[:chan2_data][wave[amp:].size + 10].ord)*fact2
+  def process_waveform
+    fact1 = @trace.chan1_scale/25.0
+    fact2 = @trace.chan2_scale/25.0
+    sub1 = 240 * fact1 - (@trace.chan1_offset + @trace.chan1_scale * 4.6)
+    sub2 = 240 * fact2 - (@trace.chan2_offset + @trace.chan2_scale * 4.6)
+    inter = sub1 - sub2
+    time_offset = @trace.time_offset
+    sampling_rate = @trace.sampling_rate
+    Trace.transaction do
+      (chan1_data.bytesize).times do |idx|
+        @trace.sample_points.create(
+          # [
+          #   (240 - <Raw_Byte>) * (<Volts_Div> / 25) - [(<Vert_Offset> + <Volts_Div> * 4.6)]
+          # ]
+          reading: inter - (chan1_data[idx].ord * fact1) + (chan2_data[idx].ord * fact2),
+          timestamp: time_offset + idx / sampling_rate
+        )
       end
-
-      
     end
+    @trace
   end
 end
