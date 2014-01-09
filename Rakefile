@@ -6,31 +6,8 @@ require 'active_record/tasks/database_tasks'
 require 'yaml'
 require 'active_record_migrations'
 ActiveRecordMigrations.load_tasks
-# include ActiveRecord::Tasks
-
-# load "active_record/railties/databases.rake"
-
-# DatabaseTasks.env = 'development'
-# ActiveRecord::Base.configurations = DatabaseTasks.database_configuration =
-#   YAML.load_file('db/config.yml')
-# DatabaseTasks.current_config = DatabaseTasks.database_configuration['development']
-# DatabaseTasks.db_dir = 'db'
-# DatabaseTasks.migrations_paths = 'db/migrate'
 
 Dir.glob('lib/[^s]*.rb').each{|x| require_relative x}
-
-# namespace :db do
-#   namespace :migrate do
-#     task :create, [:name] do |t, args|
-#       File.open "#{args.name}.rb", 'w' do |file|
-#         file.write <<EOF
-# 
-# 
-# EOF
-#       end
-#     end
-#   end
-# end
 
 desc "Start IRB with all runtime dependencies loaded"
 task :console, [:script] do |t,args|
