@@ -29,6 +29,9 @@ task :console, [:script] do |t,args|
 
   require 'irb'
 
+  ActiveRecord::Base.logger = ActiveSupport::Logger.new(STDOUT)
+  ActiveRecord::Base.establish_connection(YAML.load_file('db/config.yml')['development'])
+
   # set the optional script to run
   IRB.conf[:SCRIPT] = args.script
   IRB.start
