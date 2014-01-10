@@ -7,7 +7,7 @@ require 'yaml'
 require 'active_record_migrations'
 ActiveRecordMigrations.load_tasks
 
-Dir.glob('lib/[^s]*.rb').each{|x| require_relative x}
+require_relative 'lib/models'
 
 desc "Start IRB with all runtime dependencies loaded"
 task :console, [:script] do |t,args|

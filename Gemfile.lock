@@ -1,6 +1,6 @@
 GIT
   remote: git://github.chi.matasano.com/td/airby.git
-  revision: c2df9344b36f56b0f26dcbf1d60d288142765db6
+  revision: f3cda29f4b8d4c74cb70a09a9aeff766807de414
   branch: master
   specs:
     airby (0.1.0)
@@ -8,7 +8,7 @@ GIT
 
 GIT
   remote: git://github.chi.matasano.com/td/ds1102d.git
-  revision: a9265ee795bc3e3b49e5bb6742fa1f353e400ea6
+  revision: 704fdaf21168e563dacda45190b64d13d8363c3a
   branch: master
   specs:
     ds1102d (0.2.2)

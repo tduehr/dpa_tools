@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20131230224304) do
+ActiveRecord::Schema.define(version: 20140110162232) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -71,6 +71,7 @@ ActiveRecord::Schema.define(version: 20131230224304) do
     t.integer  "resistor"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.text     "key"
   end
 
   add_index "traces", ["implementation_id"], name: "index_traces_on_implementation_id", using: :btree
