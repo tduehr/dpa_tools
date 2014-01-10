@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140110162232) do
+ActiveRecord::Schema.define(version: 20140110200906) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -74,7 +74,10 @@ ActiveRecord::Schema.define(version: 20140110162232) do
     t.text     "key"
   end
 
+  add_index "traces", ["cipher_text"], name: "index_traces_on_cipher_text", using: :btree
   add_index "traces", ["implementation_id"], name: "index_traces_on_implementation_id", using: :btree
+  add_index "traces", ["key"], name: "index_traces_on_key", using: :btree
+  add_index "traces", ["plain_text"], name: "index_traces_on_plain_text", using: :btree
 
   create_table "users", force: true do |t|
     t.string   "email"
