@@ -11,10 +11,25 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140110200906) do
+ActiveRecord::Schema.define(version: 20140113135517) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "data_files", force: true do |t|
+    t.string   "name"
+    t.string   "ftype"
+    t.string   "source"
+    t.binary   "data"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.integer  "trace_id"
+  end
+
+  add_index "data_files", ["name"], name: "index_data_files_on_name", using: :btree
+  add_index "data_files", ["trace_id", "ftype", "source"], name: "index_data_files_on_trace_id_and_ftype_and_source", unique: true, using: :btree
+  add_index "data_files", ["trace_id", "ftype"], name: "index_data_files_on_trace_id_and_ftype", unique: true, using: :btree
+  add_index "data_files", ["trace_id", "source"], name: "index_data_files_on_trace_id_and_source", unique: true, using: :btree
 
   create_table "implementations", force: true do |t|
     t.string   "name"
@@ -60,11 +75,8 @@ ActiveRecord::Schema.define(version: 20140110200906) do
     t.float    "time_offset"
     t.float    "chan1_scale"
     t.float    "chan1_offset"
-    t.binary   "chan1_data"
     t.float    "chan2_scale"
     t.float    "chan2_offset"
-    t.binary   "chan2_data"
-    t.binary   "digital_data"
     t.integer  "digital_source"
     t.integer  "digital_position"
     t.float    "sampling_rate"
